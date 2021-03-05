@@ -28,14 +28,18 @@ async def help(ctx: commands.Context):
 
 # TEAM MANAGEMENT
 @bot.command()
-@commands.has_role("Executives")
 async def create_team(ctx: commands.Context, *, team_name: str):
-    teams_table.insert({'name': team_name})
+    teams = teams_table.search(where('name') == team_name)
+
+    if(len(teams) > 0):
+        await ctx.channel.send(embed=discord.Embed(title=f"This team already exists.", color=0x63e2ff))
+        return
+
+    teams_table.insert({'name': team_name, 'owner': ctx.author.id})
     await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been created.", color=0x63e2ff))
     log.good(f"Team \"{team_name}\" has been created.")
 
 @bot.command()
-@commands.has_role("Executives")
 async def teams(ctx: commands.Context):
     teams = teams_table.all()
     embed = discord.Embed(title="Team List", color=0x63e2ff)
@@ -53,11 +57,17 @@ async def teams(ctx: commands.Context):
     log.good("Listed teams.")
 
 @bot.command()
-@commands.has_role("Executives")
 async def remove_team(ctx: commands.Context, *, team_name: str):
-    teams_table.remove(where('name') == team_name)
-    await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been removed.", color=0x63e2ff))
-    log.good(f"Team \"{team_name}\" has been removed.")
+    teams = teams_table.search(where('name') == team_name)
+    
+    for team in teams:
+        if team['owner'] != ctx.author.id:
+            await ctx.channel.send(embed=discord.Embed(title=f"You do not own **{team_name}**.", color=0x63e2ff))
+            return
+        else:
+            teams_table.remove(where('name') == team_name)
+            await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been removed.", color=0x63e2ff))
+            log.good(f"Team \"{team_name}\" has been removed.")
 
 # USER MANAGEMENT
 @bot.command()
