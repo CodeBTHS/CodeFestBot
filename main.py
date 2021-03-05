@@ -39,8 +39,16 @@ async def create_team(ctx: commands.Context, *, team_name: str):
 async def teams(ctx: commands.Context):
     teams = teams_table.all()
     embed = discord.Embed(title="Team List", color=0x63e2ff)
+
     for team in teams:
-        embed.add_field(name="Team", value=team['name'])
+        members = users_table.search(where('team') == team['name'])
+        members_string = ""
+        for member in members:
+            members_string = members_string + bot.get_user(member['id']).name + ", "
+        if len(members_string) == 0:
+            members_string = "No members"
+        embed.add_field(name=team['name'], value=members_string)
+
     await ctx.channel.send(embed=embed)
     log.good("Listed teams.")
 
