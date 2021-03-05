@@ -36,6 +36,8 @@ async def create_team(ctx: commands.Context, *, team_name: str):
         return
 
     teams_table.insert({'name': team_name, 'owner': ctx.author.id})
+    await ctx.guild.create_role(name=team_name)
+
     await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been created.", color=0x63e2ff))
     log.good(f"Team \"{team_name}\" has been created.")
 
@@ -66,6 +68,8 @@ async def remove_team(ctx: commands.Context, *, team_name: str):
             return
         else:
             teams_table.remove(where('name') == team_name)
+            role = discord.utils.get(ctx.guild.roles, name=team_name)
+            await role.delete()
             await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been removed.", color=0x63e2ff))
             log.good(f"Team \"{team_name}\" has been removed.")
 
@@ -81,6 +85,8 @@ async def join(ctx: commands.Context, *, team_name: str):
     
     if(len(users) == 0):
         users_table.insert({'id': ctx.author.id, 'team': team_name})
+        role = discord.utils.get(ctx.guild.roles, name=team_name)
+        await ctx.author.add_roles(role)
         await ctx.channel.send(embed=discord.Embed(title=f"You have joined **{team_name}**.", color=0x63e2ff))
     else:
         users[0].update({'team': team_name})
@@ -100,7 +106,10 @@ async def leave(ctx: commands.Context):
     if(len(users) == 0):
         await ctx.channel.send(embed=discord.Embed(title=f"You are not in a team.", color=0x63e2ff))
     else:
+        team_name = users_table.search(where('id') == ctx.author.id)[0]['team']
         users_table.remove(where('id') == ctx.author.id)
+        role = discord.utils.get(ctx.guild.roles, name=team_name)
+        await ctx.author.remove_roles(role)
         await ctx.channel.send(embed=discord.Embed(title=f"You are no longer in **{users[0]['team']}**.", color=0x63e2ff))
 
 bot.run(token)
