@@ -35,8 +35,19 @@ async def create_team(ctx: commands.Context, *, team_name: str):
         await ctx.channel.send(embed=discord.Embed(title=f"This team already exists.", color=0x63e2ff))
         return
 
-    teams_table.insert({'name': team_name, 'owner': ctx.author.id})
-    await ctx.guild.create_role(name=team_name)
+    team_role = await ctx.guild.create_role(name=team_name)
+    
+    overwrites = {
+        ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False),
+        ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+        team_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+    }
+
+    teams_category = discord.utils.get(ctx.guild.categories, id=int(os.getenv("TEAM_CATEGORY")))
+    text_channel = await teams_category.create_text_channel(team_name, overwrites=overwrites)
+    voice_channel = await teams_category.create_voice_channel(team_name, overwrites=overwrites)
+
+    teams_table.insert({'name': team_name, 'owner': ctx.author.id, 'text_channel': text_channel.id, 'voice_channel': voice_channel.id})
 
     await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been created.", color=0x63e2ff))
     log.good(f"Team \"{team_name}\" has been created.")
@@ -67,9 +78,11 @@ async def remove_team(ctx: commands.Context, *, team_name: str):
             await ctx.channel.send(embed=discord.Embed(title=f"You do not own **{team_name}**.", color=0x63e2ff))
             return
         else:
-            teams_table.remove(where('name') == team_name)
+            await discord.utils.get(ctx.guild.text_channels, id=team['text_channel']).delete()
+            await discord.utils.get(ctx.guild.voice_channels, id=team['voice_channel']).delete()
             role = discord.utils.get(ctx.guild.roles, name=team_name)
             await role.delete()
+            teams_table.remove(where('name') == team_name)
             await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been removed.", color=0x63e2ff))
             log.good(f"Team \"{team_name}\" has been removed.")
 
