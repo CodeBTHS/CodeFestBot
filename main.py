@@ -39,11 +39,13 @@ async def create_team(ctx: commands.Context, *, team_name: str):
         return
 
     team_role = await ctx.guild.create_role(name=team_name)
+    exec_role = discord.utils.get(ctx.guild.roles, id=760588477061398609)
     
     overwrites = {
         ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False),
         ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
         team_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+        exec_role: discord.PermissionOverwrite(read_messages=True, send_messages=True),
     }
 
     teams_category = discord.utils.get(ctx.guild.categories, id=int(os.getenv("TEAM_CATEGORY")))
