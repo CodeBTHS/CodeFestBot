@@ -75,6 +75,20 @@ async def teams(ctx: commands.Context):
     log.good("Listed teams.")
 
 @bot.command()
+@commands.has_role("Mentors")
+async def force_remove_team(ctx: commands.Context, *, team_name: str):
+    teams = teams_table.search(where('name') == team_name)
+
+    for team in teams:
+        await discord.utils.get(ctx.guild.text_channels, id=team['text_channel']).delete()
+        await discord.utils.get(ctx.guild.voice_channels, id=team['voice_channel']).delete()
+        role = discord.utils.get(ctx.guild.roles, name=team_name)
+        await role.delete()
+        teams_table.remove(where('name') == team_name)
+        await ctx.channel.send(embed=discord.Embed(title=f"Team **{team_name}** has been removed.", color=0x63e2ff))
+        log.good(f"Team \"{team_name}\" has been removed.")
+
+@bot.command()
 async def remove_team(ctx: commands.Context, *, team_name: str):
     if(ctx.channel.id != 817150686114086942):
         return
