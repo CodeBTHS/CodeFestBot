@@ -29,6 +29,9 @@ async def help(ctx: commands.Context):
 # TEAM MANAGEMENT
 @bot.command()
 async def create_team(ctx: commands.Context, *, team_name: str):
+    if(ctx.channel.id != 817150686114086942):
+        return
+
     teams = teams_table.search(where('name') == team_name)
 
     if(len(teams) > 0):
@@ -71,6 +74,9 @@ async def teams(ctx: commands.Context):
 
 @bot.command()
 async def remove_team(ctx: commands.Context, *, team_name: str):
+    if(ctx.channel.id != 817150686114086942):
+        return
+    
     teams = teams_table.search(where('name') == team_name)
     
     for team in teams:
@@ -89,6 +95,9 @@ async def remove_team(ctx: commands.Context, *, team_name: str):
 # USER MANAGEMENT
 @bot.command()
 async def join(ctx: commands.Context, *, team_name: str):
+    if(ctx.channel.id != 817150686114086942):
+        return
+
     teams = teams_table.search(where('name') == team_name)
     users = users_table.search(where('id') == ctx.author.id)
 
@@ -115,6 +124,9 @@ async def team(ctx: commands.Context):
 
 @bot.command()
 async def leave(ctx: commands.Context):
+    if(ctx.channel.id != 817150686114086942):
+        return
+        
     users = users_table.search(where('id') == ctx.author.id)
     if(len(users) == 0):
         await ctx.channel.send(embed=discord.Embed(title=f"You are not in a team.", color=0x63e2ff))
