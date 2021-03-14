@@ -65,13 +65,10 @@ async def teams(ctx: commands.Context):
     for team in teams:
         members = users_table.search(where('team') == team['name'])
         members_string = ""
-        username = "**Unknown user**"
-        try:
-            username = bot.get_user(member['id']).name
-        except:
-            username = "**Unknown user**"
+        username = bot.get_user(member['id']).name
         for member in members:
-            members_string = members_string + username + ", "
+            # members_string = members_string + username + ", "
+            members_string = "Users temporarily disabled"
         if len(members_string) == 0:
             members_string = "No members."
         embed.add_field(name=team['name'], value=members_string)
