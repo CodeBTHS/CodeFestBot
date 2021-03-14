@@ -65,10 +65,15 @@ async def teams(ctx: commands.Context):
     for team in teams:
         members = users_table.search(where('team') == team['name'])
         members_string = ""
+        username = "**Unknown user**"
+        try:
+            username = bot.get_user(member['id']).name
+        except:
+            username = "**Unknown user**"
         for member in members:
-            members_string = members_string + bot.get_user(member['id']).name + ", "
+            members_string = members_string + username + ", "
         if len(members_string) == 0:
-            members_string = "No members"
+            members_string = "No members."
         embed.add_field(name=team['name'], value=members_string)
 
     await ctx.channel.send(embed=embed)
