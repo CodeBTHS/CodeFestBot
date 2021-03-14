@@ -65,9 +65,11 @@ async def teams(ctx: commands.Context):
     for team in teams:
         members = users_table.search(where('team') == team['name'])
         members_string = ""
-        username = bot.get_user(member['id']).name
-        for member in members:
-            # members_string = members_string + username + ", "
+        try:
+            for member in members:
+                username = bot.get_user(member['id']).name
+                members_string = members_string + username + ", "
+        except:
             members_string = "Users temporarily disabled"
         if len(members_string) == 0:
             members_string = "No members."
