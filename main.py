@@ -79,7 +79,7 @@ async def teams(ctx: commands.Context):
     log.good("Listed teams.")
 
 @bot.command()
-@commands.has_role("Mentors")
+@commands.has_role("Executives")
 async def force_remove_team(ctx: commands.Context, *, team_name: str):
     teams = teams_table.search(where('name') == team_name)
 
